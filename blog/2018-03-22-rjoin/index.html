@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Designing a fast CLI join tool with rust</title>
+  <meta property="og:title" content="Designing a fast CLI join tool with rust" />
+  <meta name="twitter:title" content="Designing a fast CLI join tool with rust" />
+  <meta name="description" content="(or how rust helped me to match the speed of GNU join written by Mike Haertel)
+">
+  <meta property="og:description" content="(or how rust helped me to match the speed of GNU join written by Mike Haertel)
+">
+  <meta name="twitter:description" content="(or how rust helped me to match the speed of GNU join written by Mike Haertel)
+">
+  <meta name="author" content="Milan Opath"/>
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@MilanOpath" />
+  <meta name="twitter:creator" content="@MilanOpath" />
+  <meta property="og:url" content="/blog/2018-03-22-rjoin/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Milan&#39;s blog" />
+
+  <meta name="generator" content="Hugo 0.37.1" />
+  <link rel="canonical" href="/blog/2018-03-22-rjoin/" />
+  <link rel="alternate" href="/index.xml" type="application/rss+xml" title="Milan&#39;s blog">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css" integrity="sha384-wITovz90syo1dJWVh32uuETPVEtGigN07tkttEqPv+uR2SE/mbQcG7ATL28aI9H0" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/main.css" /><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="css/codeblock.css" />
+  <link rel="stylesheet" href="css/highlight.min.css" />
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+</head>
+
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="">Milan Opath</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+        
+          
+            <li>
+              <a title="home" href="/">home</a>
+            </li>
+          
+        
+          
+            <li>
+              <a title="blog" href="/blog/">blog</a>
+            </li>
+          
+        
+          
+            <li>
+              <a title="about" href="/about/">about</a>
+            </li>
+          
+        
+
+        
+
+        
+      </ul>
+    </div>
+
+    <div class="avatar-container">
+      <div class="avatar-img-border">
+        
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+
+
+
+    
+  
+  
+  
+
+
+
+
+  
+
+  <header class="header-section ">
+    
+    <div class="intro-header no-img">
+      
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <div class="blog-heading">
+              <h1>Designing a fast CLI join tool with rust</h1>
+                
+                
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+    
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+        <p>(or how rust helped me to match the speed of GNU <code>join</code> written by Mike Haertel)
+</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>Join two files on command line on the common join fields as fast as
+possible. GNU join supports only one join field and I wanted to make it
+more generic by supporting arbitrary number of them.</p>
+
+<h2 id="initial-idea">Initial idea</h2>
+
+<p>It turns out developing a <em>fast</em> CLI tools is quite tricky. Even a
+dumb-looking command like <code>yes</code> has actually a pretty sophisticated
+<a href="https://matthias-endler.de/2017/yes/">code</a>.</p>
+
+<p>At the beginning I had practically zero experience with system programming. But I knew some theory.
+First of all, do only what is necessary. In Mike Haertel&rsquo;s words:
+&gt; The key to making programs fast is to make them do practically nothing.</p>
+
+<p>Second, amortize repeating heap allocations.
+And third, <a href="http://futuretech.blinkenlights.nl/misc/cpumemory.pdf">cache is king</a>.</p>
+
+<p>Having these in mind, I imagined having a reusable input buffer where
+parser only indexes positions of fields and records in the buffer.</p>
+
+<p>The tricky part is that the last record will not fit the buffer entirely
+most of the time and therefore the buffer cannot be consumed. We
+also can&rsquo;t reload the input buffer with new data otherwise we would
+overwrite the unconsumed one. The solution - roll the partial record to
+the beginning of the buffer and load new data from there.</p>
+
+<p>But what if the partial record is large and misses only a few bytes to
+its completion. We already parsed most of its fields. Wouldn&rsquo;t it be pity if
+we had to re-parse it from the beginning after the roll of the buffer?
+The solution - offset the index containing the partial record and start
+parsing from the last incomplete field.</p>
+
+<p>However, this requires a delicate housekeeping to do it right. Fortunately rust
+makes it very easy and convenient to test it and protects me from accessing the input
+buffer out of bounds. Doing this in C requires a hell lot of concentration
+and experience. Granted, I pay the price of bounds checks, but the cost
+is acceptable.</p>
+
+<p>Now let&rsquo;s review the various parts in more detail.</p>
+
+<h2 id="input-buffer">Input buffer</h2>
+
+<p>Unfortunately I could not find any library providing the roll feature
+described above. There are ring or circular buffers, but none offers
+what I needed, so I made my own.  You can find the code in the separate
+crate - <a href="https://github.com/milancio42/rjoin/rollbuf">rollbuf</a>.
+The API is is quite similar to the <code>std::io::BufReader</code>, adding just:</p>
+
+<pre><code class="language-rust">pub fn roll(&amp;mut self) {...}
+</code></pre>
+
+<h2 id="parsing">Parsing</h2>
+
+<p>This is the most sophisticated part based on <a href="http://www.vldb.org/pvldb/vol10/p1118-li.pdf">Y. Li, N. R. Katsipoulakis, B. Chandramouli, J. Goldstein, and D. Kossmann. Mison: a fast JSON parser for data analytics. In <em>VLDB</em>, 2017</a>.
+&gt; Unlike traditional FSM based parsers, it converts control flow into data
+&gt; flow, thereby largely eliminating inherently unpredictable branches in
+&gt; the program and exploiting the parallelism available in modern processors.</p>
+
+<p>Implementing it from scratch was above my capability, so I shamelessly copied <a href="https://github.com/pikkr/pikkr">pikker&rsquo;s</a> implementation and tailored it to my needs.</p>
+
+<p>The whole input buffer is parsed at once. This way we avoid the context switching for every record.
+When done, it builds two indices (heap allocated, but reused thus amortized):
+-  fields: containing the position of each field in the input buffer
+-  records: containing the position of each record in fields index</p>
+
+<p>The indices are synchronized with the input buffer. It means each index
+pointing to the rolled part of the input buffer is properly offset. This
+way we avoid re-parsing the same part twice.</p>
+
+<p>The parser&rsquo;s code is split into two parts:
+-  csvroll crate - the generic building block, which takes care of synchronization
+of rollbuf with index builder. It builds fields and records indices.
+You can think of it as an analogy to BurntSushi&rsquo;s
+<a href="https://crates.io/crates/csv-core">csv-core</a> and it is in the separate
+crate for the same reason.
+Currently it handles only field separators and record terminators - no quotes,
+escape characters or other advanced CSV features, so for now it&rsquo;s not
+really an alternative to csv-core.</p>
+
+<ul>
+<li>the custom part which takes care of grouping the records and is part
+of rjoin crate. The group contains the position of records with the same key (join fields). This is necessary because the join of multiple records with the same key results in <a href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a>.
+It handles all the complexity of calling the parser and provides a simple, iterator-like interface:</li>
+</ul>
+
+<pre><code class="language-rust">pub fn next_group(&amp;mut self) -&gt; Result&lt;Option&lt;_&gt;, Box&lt;Error&gt; {...}
+</code></pre>
+
+<p>Note: I&rsquo;ll replace <code>Box&lt;Error&gt;</code> for <code>failure::Error</code> as soon as I have time.</p>
+
+<h2 id="join">Join</h2>
+
+<p>This is really a simple loop which calls <code>next_group</code> on two inputs
+based on whether a match occurred and which join options are active.</p>
+
+<h2 id="output">Output</h2>
+
+<p>The output takes care of formatting the results of the join. Since there
+are many possible output formats or serialization protocols, I made it
+generic using a trait <code>Print</code>.</p>
+
+<pre><code class="language-rust">pub trait Print&lt;W:io::Write&gt; {
+    fn print_left(&amp;mut self, w: &amp;mut W, ...) -&gt; Result&lt;(), Box&lt;Error&gt;&gt;;
+    fn print_right(&amp;mut self, w: &amp;mut W, ...) -&gt; Result&lt;(), Box&lt;Error&gt;&gt;;
+    fn print_both(&amp;mut self, w: &amp;mut W, ...) -&gt; Result&lt;(), Box&lt;Error&gt;&gt;;
+}
+</code></pre>
+
+<p>Currently there is only one <code>struct</code>  which implements <code>Print</code>. It prints the join fields followed by remaining fields from the left and right file if present and/or requested.</p>
+
+<h2 id="so-how-fast-is-it">So, how fast is it?</h2>
+
+<p>Generally, rjoin is slightly faster if the output is small compared
+to input records. This is due to rjoin&rsquo;s more efficient parser. If the
+output is large but is mostly unique, then GNU join is slightly
+faster. rjoin pays a penalty for its arbitrary number of join fields - it
+requires one more indirection which slows down a bit the output printing.</p>
+
+<p>If however the large output is non-unique (i.e. it must perform a lot
+of Cartesian product), than they are at par.</p>
+
+<p>Detailed benchmarks can be found <a href="https://github.com/milancio42/rjoin/blob/master/examples/gnu-join-speed-comparision.md">here</a>.</p>
+
+<h2 id="further-optimizations">Further optimizations</h2>
+
+<p>While rjoin is quite fast, it can still be faster. There are two low hanging fruits:</p>
+
+<ul>
+<li><p><strong>specialization:</strong> in case there is only one join field I could get
+rid of the vector holding join fields. This should speed-up the output
+printing.
+In the best case where input and output separators are the same and
+the first field is the (only) join field, I could even avoid parsing
+individual fields and reuse the fields and separators from input.</p></li>
+
+<li><p><strong>threads:</strong> the parser can comfortably parse the input buffer in
+parallel using more threads. rust should make this quite easy and safe.</p></li>
+</ul>
+
+<h2 id="some-notes-on-rust">Some notes on rust</h2>
+
+<p>The language and tooling felt very ergonomic. For me
+the principal hindrance was the lack of support for <a href="https://github.com/rust-lang/rfcs/blob/master/text/2094-nll.md">non-lexical
+lifetimes</a>.
+Knowing the code is correct but having the compiler complaining is
+quite annoying. Luckily, the implementation already landed in nightly
+so no more frustration on that part.</p>
+
+<p>The first-class support for SIMD would be also very welcome. Currently
+it&rsquo;s quite complicated to do it manually. There are some crates
+like <a href="https://github.com/rust-lang-nursery/stdsimd">stdsimd</a> or
+<a href="https://github.com/AdamNiederer/faster">faster</a> which claim to simplify
+it, but the API is still experimental.</p>
+
+<h2 id="wrap-up">Wrap-up</h2>
+
+<p>Writing a fast CLI tool was a pleasant and educative experience. Rust
+helped me to concentrate on the code&rsquo;s logic rather than on avoiding
+shooting my leg, or worse. That way I had more time to study algorithms
+and programing techniques
+ which in turn made me <a href="http://words.steveklabnik.com/fire-mario-not-fire-flowers">the Fire Mario</a>.</p>
+      </article>
+
+      
+        <ul class="pager blog-pager">
+          
+          
+        </ul>
+      
+
+
+      
+
+    </div>
+  </div>
+</div>
+
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+              <li>
+                <a href="mailto:milan.opath@gmail.com" title="Email me">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/milancio42" title="GitHub">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="https://twitter.com/MilanOpath" title="Twitter">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+          
+        </ul>
+        <p class="credits copyright text-muted">
+          
+            
+              Milan Opath
+            
+          
+
+          &nbsp;&bull;&nbsp;
+          2018
+
+          
+            &nbsp;&bull;&nbsp;
+            <a href="">Milan&#39;s blog</a>
+          
+        </p>
+        
+        <p class="credits theme-by text-muted">
+          <a href="http://gohugo.io">Hugo v0.37.1</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">Beautiful Jekyll</a> adapted to <a href="https://github.com/halogenica/beautifulhugo">Beautiful Hugo</a>
+          
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js" integrity="sha384-dq1/gEHSxPZQ7DdrM82ID4YVol9BYyU7GbWlIwnwyPzotpoc57wDw/guX8EaYGPx" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="js/main.js"></script>
+<script src="js/highlight.min.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script><script> renderMathInElement(document.body); </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+<script src="js/load-photoswipe.js"></script>
+
+
+
+
+
+
+  </body>
+</html>
+
