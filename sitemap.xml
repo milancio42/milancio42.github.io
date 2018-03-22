@@ -8,6 +8,10 @@
   </url>
   
   <url>
+    <loc>/about/</loc>
+  </url>
+  
+  <url>
     <loc>/blog/</loc>
     <lastmod>2018-03-22T09:27:20+01:00</lastmod>
     <priority>0</priority>
