@@ -3,33 +3,33 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://milancio42.github.io/blog/2018-03-22-rjoin/</loc>
+    <loc>https://milancio42.github.io/blog/2018-03-22-rjoin/</loc>
     <lastmod>2018-03-22T09:27:20+01:00</lastmod>
   </url>
   
   <url>
-    <loc>http://milancio42.github.io/about/</loc>
+    <loc>https://milancio42.github.io/about/</loc>
   </url>
   
   <url>
-    <loc>http://milancio42.github.io/blog/</loc>
-    <lastmod>2018-03-22T09:27:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://milancio42.github.io/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://milancio42.github.io/</loc>
+    <loc>https://milancio42.github.io/blog/</loc>
     <lastmod>2018-03-22T09:27:20+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://milancio42.github.io/tags/</loc>
+    <loc>https://milancio42.github.io/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://milancio42.github.io/</loc>
+    <lastmod>2018-03-22T09:27:20+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://milancio42.github.io/tags/</loc>
     <priority>0</priority>
   </url>
   

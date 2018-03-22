@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blogs on Milan&#39;s blog</title>
-    <link>http://milancio42.github.io/blog/</link>
+    <link>https://milancio42.github.io/blog/</link>
     <description>Recent content in Blogs on Milan&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -10,15 +10,15 @@
     <webMaster>milan.opath@gmail.com (Milan Opath)</webMaster>
     <lastBuildDate>Thu, 22 Mar 2018 09:27:20 +0100</lastBuildDate>
     
-	<atom:link href="http://milancio42.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://milancio42.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Designing a fast CLI join tool with rust</title>
-      <link>http://milancio42.github.io/blog/2018-03-22-rjoin/</link>
+      <link>https://milancio42.github.io/blog/2018-03-22-rjoin/</link>
       <pubDate>Thu, 22 Mar 2018 09:27:20 +0100</pubDate>
       <author>milan.opath@gmail.com (Milan Opath)</author>
-      <guid>http://milancio42.github.io/blog/2018-03-22-rjoin/</guid>
+      <guid>https://milancio42.github.io/blog/2018-03-22-rjoin/</guid>
       <description>&lt;p&gt;(or how rust helped me to match the speed of GNU &lt;code&gt;join&lt;/code&gt; written by Mike Haertel)
 &lt;/p&gt;</description>
     </item>
