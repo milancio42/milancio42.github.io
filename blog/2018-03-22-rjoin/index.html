@@ -187,8 +187,11 @@ dumb-looking command like <code>yes</code> has actually a pretty sophisticated
 <a href="https://matthias-endler.de/2017/yes/">code</a>.</p>
 
 <p>At the beginning I had practically zero experience with system programming. But I knew some theory.
-First of all, do only what is necessary. In Mike Haertel&rsquo;s words:
-&gt; The key to making programs fast is to make them do practically nothing.</p>
+First of all, do only what is necessary. In Mike Haertel&rsquo;s words:</p>
+
+<blockquote>
+<p>The key to making programs fast is to make them do practically nothing.</p>
+</blockquote>
 
 <p>Second, amortize repeating heap allocations.
 And third, <a href="http://futuretech.blinkenlights.nl/misc/cpumemory.pdf">cache is king</a>.</p>
@@ -229,10 +232,13 @@ The API is is quite similar to the <code>std::io::BufReader</code>, adding just:
 
 <h2 id="parsing">Parsing</h2>
 
-<p>This is the most sophisticated part based on <a href="http://www.vldb.org/pvldb/vol10/p1118-li.pdf">Y. Li, N. R. Katsipoulakis, B. Chandramouli, J. Goldstein, and D. Kossmann. Mison: a fast JSON parser for data analytics. In <em>VLDB</em>, 2017</a>.
-&gt; Unlike traditional FSM based parsers, it converts control flow into data
-&gt; flow, thereby largely eliminating inherently unpredictable branches in
-&gt; the program and exploiting the parallelism available in modern processors.</p>
+<p>This is the most sophisticated part based on <a href="http://www.vldb.org/pvldb/vol10/p1118-li.pdf">Y. Li, N. R. Katsipoulakis, B. Chandramouli, J. Goldstein, and D. Kossmann. Mison: a fast JSON parser for data analytics. In <em>VLDB</em>, 2017</a>.</p>
+
+<blockquote>
+<p>Unlike traditional FSM based parsers, it converts control flow into data
+flow, thereby largely eliminating inherently unpredictable branches in
+the program and exploiting the parallelism available in modern processors.</p>
+</blockquote>
 
 <p>Implementing it from scratch was above my capability, so I shamelessly copied <a href="https://github.com/pikkr/pikkr">pikker&rsquo;s</a> implementation and tailored it to my needs.</p>
 
