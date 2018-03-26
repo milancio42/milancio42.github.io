@@ -182,7 +182,7 @@ more generic by supporting arbitrary number of them.</p>
 
 <h2 id="initial-idea">Initial idea</h2>
 
-<p>It turns out developing a <em>fast</em> CLI tools is quite tricky. Even a
+<p>It turns out developing <em>fast</em> CLI tools is quite tricky. Even a
 dumb-looking command like <code>yes</code> has actually a pretty sophisticated
 <a href="https://matthias-endler.de/2017/yes/">code</a>.</p>
 
@@ -202,16 +202,16 @@ parser only indexes positions of fields and records in the buffer.</p>
 <p>The tricky part is that the last record will not fit the buffer entirely
 most of the time and therefore the buffer cannot be consumed. We
 also can&rsquo;t reload the input buffer with new data otherwise we would
-overwrite the unconsumed one. The solution - roll the partial record to
+overwrite the unconsumed one. The solution is to roll the partial record to
 the beginning of the buffer and load new data from there.</p>
 
 <p>But what if the partial record is large and misses only a few bytes to
-its completion. We already parsed most of its fields. Wouldn&rsquo;t it be pity if
-we had to re-parse it from the beginning after the roll of the buffer?
-The solution - offset the index containing the partial record and start
+its completion. We already parsed most of its fields. It would be pity if
+we had to re-parse it from the beginning after the roll of the buffer.
+The solution is to offset the index containing the partial record and start
 parsing from the last incomplete field.</p>
 
-<p>However, this requires a delicate housekeeping to do it right. Fortunately rust
+<p>However, this requires a delicate housekeeping to do right. Fortunately rust
 makes it very easy and convenient to test it and protects me from accessing the input
 buffer out of bounds. Doing this in C requires a hell lot of concentration
 and experience. Granted, I pay the price of bounds checks, but the cost
@@ -243,28 +243,32 @@ the program and exploiting the parallelism available in modern processors.</p>
 <p>Implementing it from scratch was above my capability, so I shamelessly copied <a href="https://github.com/pikkr/pikkr">pikker&rsquo;s</a> implementation and tailored it to my needs.</p>
 
 <p>The whole input buffer is parsed at once. This way we avoid the context switching for every record.
-When done, it builds two indices (heap allocated, but reused thus amortized):
--  fields: containing the position of each field in the input buffer
--  records: containing the position of each record in fields index</p>
+When done, it builds two indices (heap allocated, but reused thus amortized):</p>
+
+<ul>
+<li>fields: containing the position of each field in the input buffer</li>
+<li>records: containing the position of each record in fields index</li>
+</ul>
 
 <p>The indices are synchronized with the input buffer. It means each index
 pointing to the rolled part of the input buffer is properly offset. This
 way we avoid re-parsing the same part twice.</p>
 
-<p>The parser&rsquo;s code is split into two parts:
--  csvroll crate - the generic building block, which takes care of synchronization
+<p>The parser&rsquo;s code is split into two parts:</p>
+
+<ul>
+<li><p>csvroll crate - the generic building block, which takes care of synchronization
 of rollbuf with index builder. It builds fields and records indices.
 You can think of it as an analogy to BurntSushi&rsquo;s
 <a href="https://crates.io/crates/csv-core">csv-core</a> and it is in the separate
 crate for the same reason.
 Currently it handles only field separators and record terminators - no quotes,
 escape characters or other advanced CSV features, so for now it&rsquo;s not
-really an alternative to csv-core.</p>
+really an alternative to csv-core.</p></li>
 
-<ul>
-<li>the custom part which takes care of grouping the records and is part
+<li><p>the custom part which takes care of grouping the records and is part
 of rjoin crate. The group contains the position of records with the same key (join fields). This is necessary because the join of multiple records with the same key results in <a href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a>.
-It handles all the complexity of calling the parser and provides a simple, iterator-like interface:</li>
+It handles all the complexity of calling the parser and provides a simple, iterator-like interface:</p></li>
 </ul>
 
 <pre><code class="language-rust">pub fn next_group(&amp;mut self) -&gt; Result&lt;Option&lt;_&gt;, Box&lt;Error&gt; {...}
@@ -294,7 +298,7 @@ generic using a trait <code>Print</code>.</p>
 
 <h2 id="so-how-fast-is-it">So, how fast is it?</h2>
 
-<p>Generally, rjoin is slightly faster if the output is small compared
+<p>Generally, <a href="https://crates.io/crates/rjoin">rjoin</a> is slightly faster if the output is small compared
 to input records. This is due to rjoin&rsquo;s more efficient parser. If the
 output is large but is mostly unique, then GNU join is slightly
 faster. rjoin pays a penalty for its arbitrary number of join fields - it
