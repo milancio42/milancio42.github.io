@@ -271,7 +271,7 @@ of rjoin crate. The group contains the position of records with the same key (jo
 It handles all the complexity of calling the parser and provides a simple, iterator-like interface:</p></li>
 </ul>
 
-<pre><code class="language-rust">pub fn next_group(&amp;mut self) -&gt; Result&lt;Option&lt;_&gt;, Box&lt;Error&gt; {...}
+<pre><code class="language-rust">pub fn next_group(&amp;mut self) -&gt; Result&lt;Option&lt;_&gt;, Box&lt;Error&gt;&gt; {...}
 </code></pre>
 
 <p>Note: I&rsquo;ll replace <code>Box&lt;Error&gt;</code> for <code>failure::Error</code> as soon as I have time.</p>
